@@ -1,0 +1,64 @@
+author: Anna Beckers 
+description: Query the PatstatDB to a CSV
+docker_image: registry.git.rwth-aachen.de/tim-institute/literature-analysis-pipeline/patstat-compute-block/patstatcb
+name: Patstat Compute Block
+entrypoints:
+  run_query:
+    description: Run the query by directly passing an SQL Query
+    envs:
+      PATSTAT_DB: patstat
+      PATSTAT_HOST: 134.130.176.139
+      PATSTAT_PORT: 5432
+      PATSTAT_USER: guest
+    inputs:
+      query_str:
+        config:
+          QUERY: ''
+        description: Pass your SQL-Query here
+        type: custom
+    outputs:
+      csv_output:
+        config:
+          csv_output_BUCKET_NAME: null
+          csv_output_FILE_EXT: null
+          csv_output_FILE_NAME: null
+          csv_output_FILE_PATH: null
+          csv_output_S3_ACCESS_KEY: null
+          csv_output_S3_HOST: null
+          csv_output_S3_PORT: null
+          csv_output_S3_SECRET_KEY: null
+        description: The CSV-File of the queries result
+        type: file
+  run_query_from_file:
+    description: Run the query using a txt file
+    envs:
+      PATSTAT_DB: patstat
+      PATSTAT_HOST: 134.130.176.139
+      PATSTAT_PORT: 5432
+      PATSTAT_USER: guest
+    inputs:
+      query_file:
+        config:
+          query_file_BUCKET_NAME: null
+          query_file_FILE_EXT: null
+          query_file_FILE_NAME: null
+          query_file_FILE_PATH: null
+          query_file_S3_ACCESS_KEY: null
+          query_file_S3_HOST: null
+          query_file_S3_PORT: null
+          query_file_S3_SECRET_KEY: null
+        description: Pass the txt file here including your SQL Query
+        type: file
+    outputs:
+      csv_output:
+        config:
+          csv_output_BUCKET_NAME: null
+          csv_output_FILE_EXT: null
+          csv_output_FILE_NAME: null
+          csv_output_FILE_PATH: null
+          csv_output_S3_ACCESS_KEY: null
+          csv_output_S3_HOST: null
+          csv_output_S3_PORT: null
+          csv_output_S3_SECRET_KEY: null
+        description:  The CSV-File of the queries result 
+        type: file

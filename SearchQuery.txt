@@ -1,0 +1,1 @@
+SELECT continent, ctry_code, st3_name FROM tls801_country;
