@@ -53,22 +53,14 @@ class CSVOutput(FileSettings, OutputSettings):
 
 
 class QueryDatabaseFromFileEntrypointSettings(EnvSettings):
-    DB_HOST: str
-    DB_PORT: int
-    DB_USER: str
-    DB_PASS: str
-    DB_NAME: str
+    DB_DSN: str
 
     query_file: QueryFileInput
     csv_output: CSVOutput
 
 
 class QueryDatabaseEntrypointSettings(EnvSettings):
-    DB_HOST: str
-    DB_PORT: int
-    DB_USER: str
-    DB_PASS: str
-    DB_NAME: str
+    DB_DSN: str
 
     query_str: QueryStrInput
     csv_output: CSVOutput
@@ -105,3 +97,26 @@ def run_query_from_file(settings):
     target_csv = "output.csv"
     query_db(query, settings, target_csv)
     upload_to_s3(target_csv, settings.csv_output)
+
+
+"""
+if __name__ == "__main__":
+    test = QueryDatabaseEntrypointSettings(
+            DB_DSN="postgresql://guest:guest@localhost:5432/patstat",
+            query_str=QueryStrInput(
+                QUERY="SELECT name FROM employees;"
+            ),
+            csv_output=CSVOutput(
+                S3_HOST="http://localhost",
+                S3_PORT="9000",
+                S3_ACCESS_KEY="minioadmin",
+                S3_SECRET_KEY="minioadmin",
+                BUCKET_NAME="output-bucket",
+                FILE_PATH="output_file_path",
+                FILE_NAME="csv_file",
+                FILE_EXT="csv"
+            )
+    )
+
+    run_query_from_string(test)
+"""

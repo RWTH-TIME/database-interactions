@@ -23,6 +23,17 @@ services:
     networks:
       - scystream-net
 
+  data-postgres:
+    image: postgres
+    environment:
+      - POSTGRES_USER=guest
+      - POSTGRES_PASSWORD=guest
+      - POSTGRES_DB=patstat
+    ports:
+      - "5432:5432"
+    networks:
+      - scystream-net
+
 networks:
   scystream-net:
     driver: bridge
