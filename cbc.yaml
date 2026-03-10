@@ -1,41 +1,12 @@
 author: Anna Beckers 
-description: Query the PatstatDB to a CSV
+description: Query DB to a CSV
 docker_image: registry.git.rwth-aachen.de/tim-institute/literature-analysis-pipeline/patstat-compute-block/patstatcb
-name: Patstat Compute Block
+name: Database Interactions
 entrypoints:
-  run_query:
-    description: Run the query by directly passing an SQL Query
-    envs:
-      PATSTAT_DB: patstat
-      PATSTAT_HOST: 134.130.176.139
-      PATSTAT_PORT: 5432
-      PATSTAT_USER: guest
-    inputs:
-      query_str:
-        config:
-          QUERY: ''
-        description: Pass your SQL-Query here
-        type: custom
-    outputs:
-      csv_output:
-        config:
-          csv_output_BUCKET_NAME: null
-          csv_output_FILE_EXT: null
-          csv_output_FILE_NAME: null
-          csv_output_FILE_PATH: null
-          csv_output_S3_ACCESS_KEY: null
-          csv_output_S3_HOST: null
-          csv_output_S3_PORT: null
-          csv_output_S3_SECRET_KEY: null
-        description: The CSV-File of the queries result
-        type: file
   run_query_from_file:
-    description: Run the query using a txt file
+    description: Run the query using a file containing the query
     envs:
-      PATSTAT_DB: patstat
-      PATSTAT_HOST: 134.130.176.139
-      PATSTAT_PORT: 5432
-      PATSTAT_USER: guest
+      DB_DSN: null
     inputs:
       query_file:
         config:
@@ -47,18 +18,41 @@ entrypoints:
           query_file_S3_HOST: null
           query_file_S3_PORT: null
           query_file_S3_SECRET_KEY: null
-        description: Pass the txt file here including your SQL Query
+        description: txt file containing the SQL query
         type: file
     outputs:
       csv_output:
         config:
           csv_output_BUCKET_NAME: null
-          csv_output_FILE_EXT: null
+          csv_output_FILE_EXT: csv
           csv_output_FILE_NAME: null
           csv_output_FILE_PATH: null
           csv_output_S3_ACCESS_KEY: null
           csv_output_S3_HOST: null
           csv_output_S3_PORT: null
           csv_output_S3_SECRET_KEY: null
-        description:  The CSV-File of the queries result 
+        description: CSV of the queries result 
+        type: file
+  run_query_from_string:
+    description: Run the query directly by passing an SQL Query 
+    envs:
+      DB_DSN: null
+    inputs:
+      query_str:
+        config:
+          QUERY: ''
+        description: Pass your SQL-Query here
+        type: custom
+    outputs:
+      csv_output:
+        config:
+          csv_output_BUCKET_NAME: null
+          csv_output_FILE_EXT: csv
+          csv_output_FILE_NAME: null
+          csv_output_FILE_PATH: null
+          csv_output_S3_ACCESS_KEY: null
+          csv_output_S3_HOST: null
+          csv_output_S3_PORT: null
+          csv_output_S3_SECRET_KEY: null
+        description: CSV of the queries result 
         type: file
