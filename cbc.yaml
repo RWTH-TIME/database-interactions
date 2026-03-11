@@ -1,6 +1,6 @@
 author: Anna Beckers 
 description: Query DB to a CSV
-docker_image: registry.git.rwth-aachen.de/tim-institute/literature-analysis-pipeline/patstat-compute-block/patstatcb
+docker_image: ghcr.io/rwth-time/database-interactions/database-interactions
 name: Database Interactions
 entrypoints:
   run_query_from_file:
