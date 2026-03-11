@@ -1,13 +1,19 @@
-FROM python:3.10
+FROM python:3.13-bookworm
 
-COPY requirements.txt ./ 
+WORKDIR /app
 
-RUN pip install --trusted-host pypi.python.org -r requirements.txt
+COPY requirements.txt .
 
-RUN apt-get update && apt-get install -y openjdk-17-jdk
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    gcc \
+    python3-dev \
+    openjdk-17-jdk \
+    && rm -rf /var/lib/apt/lists/*
 
-COPY . ./
+RUN pip install --upgrade pip
+RUN pip install -r requirements.txt
 
-# run the project
-CMD ["python3", "-m", "main"]
+COPY . .
 
+CMD ["python", "-m", "main"]
