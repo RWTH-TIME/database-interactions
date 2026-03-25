@@ -8,7 +8,11 @@ from scystream.sdk.env.settings import (
 )
 
 
-def query_db(query: str, db_settings: EnvSettings, output_file_name: str) -> None:
+def query_db(
+    query: str,
+    db_settings: EnvSettings,
+    output_file_name: str
+) -> None:
     try:
         engine = create_engine(db_settings.DB_DSN)
         with engine.connect() as conn:

@@ -1,8 +1,8 @@
 scystream-sdk==1.2.1
 SQLAlchemy==2.0.43
 psycopg2-binary==2.9.10
-PYMSQL==1.1.2
+PyMySQL==1.1.2
 duckdb==1.4.1
-cx-Oracle==8.3.0
 pyodbc==5.2.0
 snowflake-sqlalchemy==1.7.7
+oracledb==3.4.2
