@@ -66,7 +66,7 @@ class QueryDatabaseEntrypointSettings(EnvSettings):
     csv_output: CSVOutput
 
 
-# @entrypoint(QueryDatabaseEntrypointSettings)
+@entrypoint(QueryDatabaseEntrypointSettings)
 def run_query_from_string(settings):
     target_csv = "output.csv"
     execute_query_to_csv(
