@@ -1,31 +1,16 @@
 import logging
-import csv
 import sys
-from sqlalchemy import create_engine, text
 
-from scystream.sdk.env.settings import (
-    EnvSettings,
+from scystream.sdk.database_handling.database_manager import (
+    PandasDatabaseOperations,
 )
 
 
-def query_db(
-    query: str,
-    db_settings: EnvSettings,
-    output_file_name: str
-) -> None:
+def execute_query_to_csv(query: str, dsn: str, output_file: str) -> None:
     try:
-        engine = create_engine(db_settings.DB_DSN)
-        with engine.connect() as conn:
-            result = conn.execute(text(query))
-            col_names = result.keys()
-            rows = result.fetchall()
-
-            with open(output_file_name, "w", newline="") as csvfile:
-                writer = csv.writer(csvfile)
-                writer.writerow(col_names)
-                writer.writerows(rows)
+        db = PandasDatabaseOperations(dsn)
+        df = db.read(query=query)
+        df.to_csv(output_file, index=False)
     except Exception as e:
-        logging.error(f"Failed to execute query or write CSV: {e}")
+        logging.error(f"Database query failed: {e}")
         sys.exit(1)
-    finally:
-        conn.close()
