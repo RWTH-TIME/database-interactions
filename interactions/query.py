@@ -6,9 +6,11 @@ from scystream.sdk.database_handling.database_manager import (
 )
 
 
-def execute_query_to_csv(query: str, dsn: str, output_file: str) -> None:
+def execute_query_to_csv(
+    query: str, dsn: str, output_file: str, schema: str | None
+) -> None:
     try:
-        db = PandasDatabaseOperations(dsn)
+        db = PandasDatabaseOperations(dsn, schema)
         df = db.read(query=query)
         df.to_csv(output_file, index=False)
     except Exception as e:

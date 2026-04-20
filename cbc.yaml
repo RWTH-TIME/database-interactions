@@ -1,4 +1,4 @@
-author: Anna Beckers 
+author: Anna Beckers
 description: Query DB to a CSV
 docker_image: ghcr.io/rwth-time/database-interactions/database-interactions
 name: Database Interactions
@@ -7,6 +7,7 @@ entrypoints:
     description: Run the query using a file containing the query
     envs:
       DB_DSN: null
+      DB_SCHEMA: null
     inputs:
       query_file:
         config:
@@ -31,12 +32,13 @@ entrypoints:
           csv_output_S3_HOST: null
           csv_output_S3_PORT: null
           csv_output_S3_SECRET_KEY: null
-        description: CSV of the queries result 
+        description: CSV of the queries result
         type: file
   run_query_from_string:
-    description: Run the query directly by passing an SQL Query 
+    description: Run the query directly by passing an SQL Query
     envs:
       DB_DSN: null
+      DB_SCHEMA: null
     inputs:
       query_str:
         config:
@@ -54,5 +56,5 @@ entrypoints:
           csv_output_S3_HOST: null
           csv_output_S3_PORT: null
           csv_output_S3_SECRET_KEY: null
-        description: CSV of the queries result 
+        description: CSV of the queries result
         type: file

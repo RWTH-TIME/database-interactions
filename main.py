@@ -54,6 +54,7 @@ class CSVOutput(FileSettings, OutputSettings):
 
 class QueryDatabaseFromFileEntrypointSettings(EnvSettings):
     DB_DSN: str
+    DB_SCHEMA: str | None = None
 
     query_file: QueryFileInput
     csv_output: CSVOutput
@@ -61,6 +62,7 @@ class QueryDatabaseFromFileEntrypointSettings(EnvSettings):
 
 class QueryDatabaseEntrypointSettings(EnvSettings):
     DB_DSN: str
+    DB_SCHEMA: str | None = None
 
     query_str: QueryStrInput
     csv_output: CSVOutput
@@ -73,6 +75,7 @@ def run_query_from_string(settings):
         query=settings.query_str.QUERY,
         dsn=settings.DB_DSN,
         output_file=target_csv,
+        schema=settings.DB_SCHEMA,
     )
     upload_to_s3(target_csv, settings.csv_output)
 
@@ -91,7 +94,10 @@ def run_query_from_file(settings):
     target_csv = "output.csv"
 
     execute_query_to_csv(
-        query=query, dsn=settings.DB_DSN, output_file=target_csv
+        query=query,
+        dsn=settings.DB_DSN,
+        output_file=target_csv,
+        schema=settings.DB_SCHEMA,
     )
     upload_to_s3(target_csv, settings.csv_output)
 
