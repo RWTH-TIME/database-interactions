@@ -9,7 +9,7 @@ from scystream.sdk.env.settings import (
     FileSettings,
 )
 from scystream.sdk.file_handling.s3_manager import S3Operations
-from interactions.query import query_db
+from interactions.query import execute_query_to_csv
 
 
 def upload_to_s3(local_file_path: str, output_settings: FileSettings) -> None:
@@ -22,7 +22,7 @@ def upload_to_s3(local_file_path: str, output_settings: FileSettings) -> None:
                 f"{output_settings.FILE_PATH}/"
                 f"{output_settings.FILE_NAME}."
                 f"{output_settings.FILE_EXT}"
-            )
+            ),
         )
     except Exception as e:
         logging.error(f"Failed to upload CSV to S3: {e}")
@@ -31,7 +31,7 @@ def upload_to_s3(local_file_path: str, output_settings: FileSettings) -> None:
 
 def read_query_file(file_path: str) -> str:
     try:
-        with open(file_path, 'r') as f:
+        with open(file_path, "r") as f:
             return f.read().strip()
     except Exception as e:
         logging.error(f"Failed to read query file: {e}")
@@ -54,6 +54,7 @@ class CSVOutput(FileSettings, OutputSettings):
 
 class QueryDatabaseFromFileEntrypointSettings(EnvSettings):
     DB_DSN: str
+    DB_SCHEMA: str | None = None
 
     query_file: QueryFileInput
     csv_output: CSVOutput
@@ -61,6 +62,7 @@ class QueryDatabaseFromFileEntrypointSettings(EnvSettings):
 
 class QueryDatabaseEntrypointSettings(EnvSettings):
     DB_DSN: str
+    DB_SCHEMA: str | None = None
 
     query_str: QueryStrInput
     csv_output: CSVOutput
@@ -68,9 +70,13 @@ class QueryDatabaseEntrypointSettings(EnvSettings):
 
 @entrypoint(QueryDatabaseEntrypointSettings)
 def run_query_from_string(settings):
-    query = settings.query_str.QUERY
     target_csv = "output.csv"
-    query_db(query, settings, target_csv)
+    execute_query_to_csv(
+        query=settings.query_str.QUERY,
+        dsn=settings.DB_DSN,
+        output_file=target_csv,
+        schema=settings.DB_SCHEMA,
+    )
     upload_to_s3(target_csv, settings.csv_output)
 
 
@@ -78,44 +84,39 @@ def run_query_from_string(settings):
 def run_query_from_file(settings):
     local_file = "query_file.txt"
 
-    s3_conn = S3Operations(settings.query_file)
     try:
-        s3_conn.download_file(
-            bucket_name=settings.query_file.BUCKET_NAME,
-            s3_object_name=(
-                f"{settings.query_file.FILE_PATH}/"
-                f"{settings.query_file.FILE_NAME}."
-                f"{settings.query_file.FILE_EXT}"
-            ),
-            local_file_path=local_file
-        )
+        S3Operations.download(settings.query_file, local_file)
     except Exception as e:
         logging.error(f"Failed to download query file: {e}")
         sys.exit(1)
 
     query = read_query_file(local_file)
     target_csv = "output.csv"
-    query_db(query, settings, target_csv)
+
+    execute_query_to_csv(
+        query=query,
+        dsn=settings.DB_DSN,
+        output_file=target_csv,
+        schema=settings.DB_SCHEMA,
+    )
     upload_to_s3(target_csv, settings.csv_output)
 
 
 """
 if __name__ == "__main__":
     test = QueryDatabaseEntrypointSettings(
-            DB_DSN="postgresql://guest:guest@localhost:5432/patstat",
-            query_str=QueryStrInput(
-                QUERY="SELECT name FROM employees;"
-            ),
-            csv_output=CSVOutput(
-                S3_HOST="http://localhost",
-                S3_PORT="9000",
-                S3_ACCESS_KEY="minioadmin",
-                S3_SECRET_KEY="minioadmin",
-                BUCKET_NAME="output-bucket",
-                FILE_PATH="output_file_path",
-                FILE_NAME="csv_file",
-                FILE_EXT="csv"
-            )
+        DB_DSN="postgresql+psycopg2://postgres:postgres@localhost:5432/postgres",
+        query_str=QueryStrInput(QUERY="SELECT * FROM test_table;"),
+        csv_output=CSVOutput(
+            S3_HOST="http://localhost",
+            S3_PORT="9000",
+            S3_ACCESS_KEY="minioadmin",
+            S3_SECRET_KEY="minioadmin",
+            BUCKET_NAME="output-bucket",
+            FILE_PATH="output_file_path",
+            FILE_NAME="csv_file",
+            FILE_EXT="csv",
+        ),
     )
 
     run_query_from_string(test)
