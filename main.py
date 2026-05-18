@@ -1,5 +1,7 @@
+from datetime import datetime
 import logging
 import sys
+import pandas as pd
 
 from scystream.sdk.core import entrypoint
 from scystream.sdk.env.settings import (
@@ -7,6 +9,10 @@ from scystream.sdk.env.settings import (
     InputSettings,
     OutputSettings,
     FileSettings,
+    DatabaseSettings,
+)
+from scystream.sdk.database_handling.database_manager import (
+    PandasDatabaseOperations,
 )
 from scystream.sdk.file_handling.s3_manager import S3Operations
 from interactions.query import execute_query_to_csv
@@ -52,12 +58,19 @@ class CSVOutput(FileSettings, OutputSettings):
     FILE_EXT: str = "csv"
 
 
+class QueryInformationOutput(DatabaseSettings, OutputSettings):
+    __identifier__ = "query_information"
+
+    DB_SOURCE_DESCRIPTION: str | None
+
+
 class QueryDatabaseFromFileEntrypointSettings(EnvSettings):
     DB_DSN: str
     DB_SCHEMA: str | None = None
 
     query_file: QueryFileInput
     csv_output: CSVOutput
+    query_information: QueryInformationOutput
 
 
 class QueryDatabaseEntrypointSettings(EnvSettings):
@@ -66,6 +79,17 @@ class QueryDatabaseEntrypointSettings(EnvSettings):
 
     query_str: QueryStrInput
     csv_output: CSVOutput
+    query_information: QueryInformationOutput
+
+
+def write_query_info(query: str, source: str, settings: DatabaseSettings):
+    db = PandasDatabaseOperations(settings.DB_DSN, settings.DB_SCHEMA)
+
+    df = pd.DataFrame(
+        [{"query": query, "source": source, "created_at": datetime.now()}]
+    )
+
+    db.write(table=settings.DB_TABLE, data=df, mode="overwrite")
 
 
 @entrypoint(QueryDatabaseEntrypointSettings)
@@ -78,6 +102,11 @@ def run_query_from_string(settings):
         schema=settings.DB_SCHEMA,
     )
     upload_to_s3(target_csv, settings.csv_output)
+    write_query_info(
+        query=settings.query_str.QUERY,
+        source=settings.query_information.DB_SOURCE_DESCRIPTION,
+        settings=settings.query_information,
+    )
 
 
 @entrypoint(QueryDatabaseFromFileEntrypointSettings)
@@ -100,24 +129,8 @@ def run_query_from_file(settings):
         schema=settings.DB_SCHEMA,
     )
     upload_to_s3(target_csv, settings.csv_output)
-
-
-"""
-if __name__ == "__main__":
-    test = QueryDatabaseEntrypointSettings(
-        DB_DSN="postgresql+psycopg2://postgres:postgres@localhost:5432/postgres",
-        query_str=QueryStrInput(QUERY="SELECT * FROM test_table;"),
-        csv_output=CSVOutput(
-            S3_HOST="http://localhost",
-            S3_PORT="9000",
-            S3_ACCESS_KEY="minioadmin",
-            S3_SECRET_KEY="minioadmin",
-            BUCKET_NAME="output-bucket",
-            FILE_PATH="output_file_path",
-            FILE_NAME="csv_file",
-            FILE_EXT="csv",
-        ),
+    write_query_info(
+        query=query,
+        source=settings.query_information.DB_SOURCE_DESCRIPTION,
+        settings=settings.query_information,
     )
-
-    run_query_from_string(test)
-"""

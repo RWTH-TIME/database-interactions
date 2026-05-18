@@ -34,6 +34,14 @@ entrypoints:
           csv_output_S3_SECRET_KEY: null
         description: CSV of the queries result
         type: file
+      query_information:
+        config:
+          query_information_DB_DSN: null
+          query_information_DB_SCHEMA: null
+          query_information_DB_SOURCE_DESCRIPTION: null
+          query_information_DB_TABLE: null
+        description: A table containing information about the executed query
+        type: database_table
   run_query_from_string:
     description: Run the query directly by passing an SQL Query
     envs:
@@ -58,3 +66,11 @@ entrypoints:
           csv_output_S3_SECRET_KEY: null
         description: CSV of the queries result
         type: file
+      query_information:
+        config:
+          query_information_DB_DSN: null
+          query_information_DB_SCHEMA: null
+          query_information_DB_SOURCE_DESCRIPTION: null
+          query_information_DB_TABLE: null
+        description: A table containing information about the executed query
+        type: database_table
