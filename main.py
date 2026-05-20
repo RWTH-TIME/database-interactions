@@ -64,13 +64,19 @@ class QueryInformationOutput(DatabaseSettings, OutputSettings):
     DB_SOURCE_DESCRIPTION: str | None
 
 
+class QueryResultAsTable(DatabaseSettings, OutputSettings):
+    __identifier__ = "query_result_as_table"
+
+
 class QueryDatabaseFromFileEntrypointSettings(EnvSettings):
     DB_DSN: str
     DB_SCHEMA: str | None = None
 
     query_file: QueryFileInput
+
     csv_output: CSVOutput
     query_information: QueryInformationOutput
+    query_result_as_table: QueryResultAsTable
 
 
 class QueryDatabaseEntrypointSettings(EnvSettings):
@@ -78,8 +84,10 @@ class QueryDatabaseEntrypointSettings(EnvSettings):
     DB_SCHEMA: str | None = None
 
     query_str: QueryStrInput
+
     csv_output: CSVOutput
     query_information: QueryInformationOutput
+    query_result_as_table: QueryResultAsTable
 
 
 def write_query_info(query: str, source: str, settings: DatabaseSettings):
@@ -92,15 +100,22 @@ def write_query_info(query: str, source: str, settings: DatabaseSettings):
     db.write(table=settings.DB_TABLE, data=df, mode="overwrite")
 
 
+def write_df_to_table(df: pd.DataFrame, settings: DatabaseSettings) -> None:
+    db = PandasDatabaseOperations(settings.DB_DSN, settings.DB_SCHEMA)
+
+    db.write(table=settings.DB_TABLE, data=df, mode="overwrite")
+
+
 @entrypoint(QueryDatabaseEntrypointSettings)
 def run_query_from_string(settings):
     target_csv = "output.csv"
-    execute_query_to_csv(
+    df = execute_query_to_csv(
         query=settings.query_str.QUERY,
         dsn=settings.DB_DSN,
         output_file=target_csv,
         schema=settings.DB_SCHEMA,
     )
+    write_df_to_table(df, settings.query_result_as_table)
     upload_to_s3(target_csv, settings.csv_output)
     write_query_info(
         query=settings.query_str.QUERY,
@@ -122,12 +137,13 @@ def run_query_from_file(settings):
     query = read_query_file(local_file)
     target_csv = "output.csv"
 
-    execute_query_to_csv(
+    df = execute_query_to_csv(
         query=query,
         dsn=settings.DB_DSN,
         output_file=target_csv,
         schema=settings.DB_SCHEMA,
     )
+    write_df_to_table(df, settings.query_result_as_table)
     upload_to_s3(target_csv, settings.csv_output)
     write_query_info(
         query=query,
